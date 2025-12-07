@@ -1559,7 +1559,7 @@ When to Use:
                       <img
                         src={imgSrc}
                         alt={`Diagram for ${currentLesson.title}`}
-                        className="w-full max-w-lg rounded-xl border border-theme shadow-lg"
+                        className="w-full max-w-md rounded-xl border border-theme shadow-lg"
                       />
                     </div>
                   );
