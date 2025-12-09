@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" role="img" aria-labelledby="title desc">
+  <title id="title">UML Class Diagram Example</title>
+  <desc id="desc">ClassName with attributes and methods</desc>
+  <defs>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9fafb"/>
+      <stop offset="100%" stop-color="#e5e7eb"/>
+    </linearGradient>
+  </defs>
+  <rect x="20" y="20" width="380" height="480" rx="14" fill="url(#card)" stroke="#111827" stroke-width="2"/>
+  <line x1="20" y1="90" x2="400" y2="90" stroke="#111827" stroke-width="2"/>
+  <line x1="20" y1="300" x2="400" y2="300" stroke="#111827" stroke-width="2"/>
+  <text x="210" y="65" font-family="Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle" fill="#111827">ClassName</text>
+  <g font-family="Arial, sans-serif" font-size="20" fill="#111827">
+    <text x="40" y="130">+ attribute1 : type = defaultValue</text>
+    <text x="40" y="170">+ attribute2 : type</text>
+    <text x="40" y="210">- attribute3 : type</text>
+    <text x="40" y="240"># attribute4 : type</text>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="20" fill="#111827">
+    <text x="40" y="350">+ method1()</text>
+    <text x="40" y="390">- method2()</text>
+    <text x="40" y="430"># method3()</text>
+  </g>
+</svg>

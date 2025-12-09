@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import myImage from "./assets/Blank diagram - Page 1.png";
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
-
-
 
 const UMLTutor = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -150,9 +147,6 @@ Core OOP Concepts:
           content: `Class Diagrams are the most commonly used UML diagram. They show the static structure of a system by depicting classes, attributes, operations, and relationships.
 
 Class Structure:
-
-
-
 ┌─────────────────┐
 │   ClassName     │  ← Class Name (bold, centered)
 ├─────────────────┤
@@ -177,23 +171,13 @@ Relationships:
 ---▷ Realization   - implements interface (dashed)
 
 Example:
-┌──────────────┐
-│   Vehicle    │
-├──────────────┤
-│ - speed      │
-│ - color      │
-├──────────────┤
-│ + drive()    │
-└──────────────┘
-      △
-      │ (inheritance)
-┌──────────────┐
-│     Car      │
-├──────────────┤
-│ - doors      │
-├──────────────┤
-│ + openDoor() │
-└──────────────┘`,
+Vehicle
+  - speed, color
+  + drive()
+  inherits into
+Car
+  - doors
+  + openDoor()`,
           quiz: {
             questions: [
               {
@@ -1244,29 +1228,16 @@ When to Use:
     return Math.round((userProgress.completedLessons.length / totalLessons) * 100);
   };
 
-  // Theme classes
-  const theme = {
-    bg: darkMode ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50',
-    text: darkMode ? 'text-white' : 'text-gray-900',
-    textSecondary: darkMode ? 'text-gray-300' : 'text-gray-700',
-    textTertiary: darkMode ? 'text-gray-400' : 'text-gray-600',
-    card: darkMode ? 'bg-gray-800' : 'bg-white',
-    cardHover: darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50',
-    border: darkMode ? 'border-gray-700' : 'border-gray-200',
-    code: darkMode ? 'bg-gray-900' : 'bg-gray-100',
-    codeText: darkMode ? 'text-green-400' : 'text-green-700',
-    input: darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300',
-    progressBg: darkMode ? 'bg-gray-800' : 'bg-gray-200',
-  };
+  const themeClass = darkMode ? 'theme-dark' : 'theme-light';
 
   const renderHome = () => (
-    <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+    <div className={`app-shell ${themeClass}`}>
       <div className="max-w-7xl mx-auto">
         {/* Theme Toggle Button */}
         <div className="flex justify-end mb-4">
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className={`${theme.card} p-3 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+            className={`card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg`}
             title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-purple-600" />}
@@ -1277,7 +1248,7 @@ When to Use:
           <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
             UML Tutor
           </h1>
-          <p className={`text-xl ${theme.textSecondary} mb-8`}>Master Object-Oriented Design through Interactive Learning</p>
+          <p className="text-xl text-secondary mb-8">Master Object-Oriented Design through Interactive Learning</p>
           
           {/* Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -1315,7 +1286,7 @@ When to Use:
           </div>
 
           {/* Progress Bar */}
-          <div className={`${theme.progressBg} rounded-full h-4 overflow-hidden mb-8`}>
+          <div className="progress-bg rounded-full h-4 overflow-hidden mb-8">
             <div 
               className="bg-gradient-to-r from-cyan-500 to-purple-500 h-full transition-all duration-500"
               style={{ width: `${calculateProgress()}%` }}
@@ -1325,22 +1296,22 @@ When to Use:
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className={`${theme.card} rounded-xl p-6 border-2 border-blue-500/50 shadow-lg`}>
+          <div className="card rounded-xl p-6 border-2 border-blue-500/50 shadow-lg">
             <Brain className="w-12 h-12 text-blue-400 mb-4" />
             <h3 className="text-xl font-bold mb-2">Interactive Learning</h3>
-            <p className={theme.textTertiary}>Engaging content with real-world examples and visual diagrams</p>
+            <p className="text-tertiary">Engaging content with real-world examples and visual diagrams</p>
           </div>
           
-          <div className={`${theme.card} rounded-xl p-6 border-2 border-purple-500/50 shadow-lg`}>
+          <div className="card rounded-xl p-6 border-2 border-purple-500/50 shadow-lg">
             <MessageCircle className="w-12 h-12 text-purple-400 mb-4" />
             <h3 className="text-xl font-bold mb-2">Instant Feedback</h3>
-            <p className={theme.textTertiary}>Quizzes with detailed explanations and immediate results</p>
+            <p className="text-tertiary">Quizzes with detailed explanations and immediate results</p>
           </div>
           
-          <div className={`${theme.card} rounded-xl p-6 border-2 border-green-500/50 shadow-lg`}>
+          <div className="card rounded-xl p-6 border-2 border-green-500/50 shadow-lg">
             <Code className="w-12 h-12 text-green-400 mb-4" />
             <h3 className="text-xl font-bold mb-2">Hands-On Practice</h3>
-            <p className={theme.textTertiary}>Real scenarios and diagram-building challenges</p>
+            <p className="text-tertiary">Real scenarios and diagram-building challenges</p>
           </div>
         </div>
 
@@ -1349,7 +1320,7 @@ When to Use:
           {Object.entries(curriculum).map(([key, section]) => (
             <div 
               key={key}
-              className={`${theme.card} rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition cursor-pointer`}
+              className="card rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition cursor-pointer"
               onClick={() => {
                 setCurrentSection(key);
                 setCurrentView('section');
@@ -1368,7 +1339,7 @@ When to Use:
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen className="w-5 h-5 text-blue-400" />
-                  <span className={theme.textSecondary}>{section.lessons.length} Lessons</span>
+                  <span className="text-secondary">{section.lessons.length} Lessons</span>
                 </div>
                 
                 <div className="space-y-2">
@@ -1379,7 +1350,7 @@ When to Use:
                       ) : (
                         <Circle className={`w-4 h-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
                       )}
-                      <span className={theme.textTertiary}>{lesson.title}</span>
+                      <span className="text-tertiary">{lesson.title}</span>
                       <div className="flex gap-1 ml-auto">
                         {lesson.hasQuiz && <span className="text-xs bg-blue-600 px-2 py-1 rounded">Quiz</span>}
                         {lesson.hasChallenge && <span className="text-xs bg-purple-600 px-2 py-1 rounded">Challenge</span>}
@@ -1394,7 +1365,7 @@ When to Use:
         </div>
 
         {/* Badges Section */}
-        <div className={`mt-12 ${theme.card} rounded-2xl p-8 shadow-lg`}>
+        <div className="mt-12 card rounded-2xl p-8 shadow-lg">
           <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
             <Trophy className="w-8 h-8 text-yellow-400" />
             Achievements
@@ -1413,7 +1384,7 @@ When to Use:
                 >
                   <div className="text-4xl mb-2">{badge.icon}</div>
                   <div className="text-sm font-bold mb-1">{badge.name}</div>
-                  <div className={`text-xs ${earned ? 'text-gray-100' : theme.textTertiary}`}>{badge.description}</div>
+                  <div className={`text-xs ${earned ? 'text-gray-100' : 'text-tertiary'}`}>{badge.description}</div>
                 </div>
               );
             })}
@@ -1440,19 +1411,19 @@ When to Use:
     const section = curriculum[currentSection];
     
     return (
-      <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+      <div className={`app-shell ${themeClass}`}>
         <div className="max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <button 
               onClick={() => setCurrentView('home')}
-              className={`flex items-center gap-2 ${theme.textSecondary} hover:${theme.text} transition`}
+              className="flex items-center gap-2 text-secondary hover:text-primary transition"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Home
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`${theme.card} p-3 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+              className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
             </button>
@@ -1472,7 +1443,7 @@ When to Use:
               return (
                 <div 
                   key={lesson.id}
-                  className={`${theme.card} rounded-xl p-6 shadow-lg hover:shadow-2xl transition transform hover:scale-102`}
+                  className="card rounded-xl p-6 shadow-lg hover:shadow-2xl transition transform hover:scale-102"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -1530,36 +1501,77 @@ When to Use:
   };
 
   const renderLesson = () => {
+    const renderLessonContent = (lesson) => {
+      const parts = [];
+      const regex = /\[IMAGE:([^\]]+)\]/g;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = regex.exec(lesson.content)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push({ type: 'text', value: lesson.content.slice(lastIndex, match.index) });
+        }
+        parts.push({ type: 'image', id: match[1] });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < lesson.content.length) {
+        parts.push({ type: 'text', value: lesson.content.slice(lastIndex) });
+      }
+
+      return parts;
+    };
+
     return (
-      <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+      <div className={`app-shell ${themeClass}`}>
         <div className="max-w-4xl mx-auto">
-          <div className={`flex items-center justify-between gap-2 ${theme.textTertiary} mb-6`}>
+          <div className="flex items-center justify-between gap-2 text-tertiary mb-6">
             <div className="flex items-center gap-2">
-              <button onClick={() => setCurrentView('home')} className={`hover:${theme.text} transition`}>
+              <button onClick={() => setCurrentView('home')} className="hover:text-primary transition">
                 <Home className="w-5 h-5" />
               </button>
               <span>/</span>
-              <button onClick={() => setCurrentView('section')} className={`hover:${theme.text} transition`}>
+              <button onClick={() => setCurrentView('section')} className="hover:text-primary transition">
                 {curriculum[currentSection].title}
               </button>
               <span>/</span>
-              <span className={theme.text}>{currentLesson.title}</span>
+              <span className="text-primary">{currentLesson.title}</span>
             </div>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`${theme.card} p-2 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+              className="card p-2 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
             </button>
           </div>
 
-          <div className={`${theme.card} rounded-2xl p-8 mb-6 shadow-2xl`}>
+          <div className="card rounded-2xl p-8 mb-6 shadow-2xl">
             <h1 className="text-4xl font-bold mb-6">{currentLesson.title}</h1>
             
-            <div className="prose prose-invert max-w-none">
-              <pre className={`whitespace-pre-wrap font-mono text-sm ${theme.code} ${theme.codeText} p-6 rounded-lg overflow-x-auto`}>
-                {currentLesson.content}
-              </pre>
+            <div className="prose prose-invert max-w-none space-y-6">
+              {renderLessonContent(currentLesson).map((block, idx) => {
+                if (block.type === 'image') {
+                  const imgSrc = lessonImages[block.id];
+                  if (!imgSrc) return null;
+                  return (
+                    <div key={`img-${idx}`} className="flex justify-center">
+                      <img
+                        src={imgSrc}
+                        alt={`Diagram for ${currentLesson.title}`}
+                        className="w-full max-w-md rounded-xl border border-theme shadow-lg"
+                      />
+                    </div>
+                  );
+                }
+                return (
+                  <pre
+                    key={`text-${idx}`}
+                    className="whitespace-pre-wrap font-mono text-sm code-block p-6 rounded-lg overflow-x-auto"
+                  >
+                    {block.value}
+                  </pre>
+                );
+              })}
             </div>
           </div>
 
@@ -1610,17 +1622,17 @@ When to Use:
       const percentage = Math.round((quizState.score / quizState.lesson.quiz.questions.length) * 100);
       
       return (
-        <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+        <div className={`app-shell ${themeClass}`}>
           <div className="max-w-3xl mx-auto">
             <div className="flex justify-end mb-4">
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`${theme.card} p-3 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+                className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
               >
                 {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
               </button>
             </div>
-            <div className={`${theme.card} rounded-2xl p-8 shadow-2xl`}>
+            <div className="card rounded-2xl p-8 shadow-2xl">
               <div className="text-center mb-8">
                 <div className="text-7xl mb-4">
                   {percentage === 100 ? '🏆' : percentage >= 70 ? '🎉' : '📚'}
@@ -1629,7 +1641,7 @@ When to Use:
                 <div className="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
                   {percentage}%
                 </div>
-                <p className={`text-xl ${theme.textSecondary}`}>
+                <p className="text-xl text-secondary">
                   {quizState.score} out of {quizState.lesson.quiz.questions.length} correct
                 </p>
               </div>
@@ -1638,7 +1650,7 @@ When to Use:
                 {quizState.lesson.quiz.questions.map((q, idx) => {
                   const userAnswer = quizState.answers[idx];
                   return (
-                    <div key={idx} className={`${theme.code} rounded-lg p-4`}>
+                    <div key={idx} className="code-block rounded-lg p-4">
                       <div className="flex items-start gap-3 mb-3">
                         {userAnswer.correct ? (
                           <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
@@ -1647,7 +1659,7 @@ When to Use:
                         )}
                         <div className="flex-1">
                           <p className="font-bold mb-2">{q.q}</p>
-                          <p className={`text-sm ${theme.textTertiary} mb-2`}>
+                          <p className="text-sm text-tertiary mb-2">
                             Your answer: {q.options[userAnswer.answer]}
                           </p>
                           {!userAnswer.correct && (
@@ -1655,7 +1667,7 @@ When to Use:
                               Correct answer: {q.options[q.correct]}
                             </p>
                           )}
-                          <p className={`text-sm ${theme.textSecondary} italic`}>{q.explanation}</p>
+                          <p className="text-sm text-secondary italic">{q.explanation}</p>
                         </div>
                       </div>
                     </div>
@@ -1690,22 +1702,22 @@ When to Use:
     const progress = ((quizState.currentQuestion + 1) / quizState.lesson.quiz.questions.length) * 100;
 
     return (
-      <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+      <div className={`app-shell ${themeClass}`}>
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-end mb-4">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`${theme.card} p-3 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+              className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
             </button>
           </div>
           <div className="mb-6">
-            <div className={`flex justify-between text-sm ${theme.textTertiary} mb-2`}>
+            <div className="flex justify-between text-sm text-tertiary mb-2">
               <span>Question {quizState.currentQuestion + 1} of {quizState.lesson.quiz.questions.length}</span>
               <span>Score: {quizState.score}/{quizState.currentQuestion}</span>
             </div>
-            <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full h-2 overflow-hidden`}>
+            <div className="progress-bg rounded-full h-2 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 h-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
@@ -1713,7 +1725,7 @@ When to Use:
             </div>
           </div>
 
-          <div className={`${theme.card} rounded-2xl p-8 shadow-2xl`}>
+          <div className="card rounded-2xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold mb-6">{question.q}</h2>
 
             <div className="space-y-3">
@@ -1721,7 +1733,7 @@ When to Use:
                 <button
                   key={idx}
                   onClick={() => answerQuestion(idx)}
-                  className={`w-full text-left ${theme.code} ${theme.cardHover} p-4 rounded-lg transition border-2 ${theme.border} hover:border-cyan-500`}
+                  className="w-full text-left code-block card-hover p-4 rounded-lg transition border-2 border-theme hover:border-cyan-500"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center font-bold flex-shrink-0">
@@ -1740,7 +1752,7 @@ When to Use:
 
   const renderChallenge = () => {
     return (
-      <div className={`min-h-screen ${theme.bg} ${theme.text} p-8`}>
+      <div className={`app-shell ${themeClass}`}>
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <button 
@@ -1748,29 +1760,29 @@ When to Use:
                 setChallengeState(null);
                 setCurrentView('lesson');
               }}
-              className={`flex items-center gap-2 ${theme.textSecondary} hover:${theme.text} transition`}
+              className="flex items-center gap-2 text-secondary hover:text-primary transition"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Lesson
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`${theme.card} p-3 rounded-full ${theme.border} border-2 hover:scale-110 transition shadow-lg`}
+              className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
             </button>
           </div>
 
-          <div className={`${theme.card} rounded-2xl p-8 mb-6 shadow-2xl`}>
+          <div className="card rounded-2xl p-8 mb-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
               <Code className="w-8 h-8 text-purple-400" />
               <h1 className="text-3xl font-bold">{challengeState.lesson.challenge.title}</h1>
             </div>
-            <p className={`${theme.textSecondary} text-lg mb-4`}>{challengeState.lesson.challenge.description}</p>
+            <p className="text-secondary text-lg mb-4">{challengeState.lesson.challenge.description}</p>
             
-            <div className={`${theme.code} rounded-lg p-6 mb-4`}>
+            <div className="code-block rounded-lg p-6 mb-4">
               <h3 className="font-bold mb-3 text-cyan-400">Scenario:</h3>
-              <pre className={`whitespace-pre-wrap text-sm ${theme.textSecondary}`}>{challengeState.lesson.challenge.scenario}</pre>
+              <pre className="whitespace-pre-wrap text-sm text-secondary">{challengeState.lesson.challenge.scenario}</pre>
             </div>
 
             {challengeState.hintsUsed < challengeState.lesson.challenge.hints.length && (
@@ -1794,13 +1806,13 @@ When to Use:
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className={`${theme.card} rounded-2xl p-6 shadow-2xl`}>
+            <div className="card rounded-2xl p-6 shadow-2xl">
               <h3 className="font-bold mb-4 text-xl">Your Solution</h3>
               <textarea
                 value={challengeState.userSolution}
                 onChange={(e) => setChallengeState({ ...challengeState, userSolution: e.target.value })}
                 placeholder="Draw your UML diagram here using ASCII art...&#10;&#10;Example:&#10;┌─────────┐&#10;│  Class  │&#10;├─────────┤&#10;│ - attr  │&#10;└─────────┘"
-                className={`w-full h-96 ${theme.input} ${theme.codeText} font-mono text-sm p-4 rounded-lg border focus:border-cyan-500 focus:outline-none resize-none`}
+                className="w-full h-96 input-field code-text font-mono text-sm p-4 rounded-lg border focus:border-cyan-500 focus:outline-none resize-none"
               />
               <div className="mt-4 flex gap-4">
                 <button
@@ -1820,12 +1832,12 @@ When to Use:
             </div>
 
             {challengeState.showSolution && (
-              <div className={`${theme.card} rounded-2xl p-6 shadow-2xl`}>
+              <div className="card rounded-2xl p-6 shadow-2xl">
                 <h3 className="font-bold mb-4 text-xl text-cyan-400">Reference Solution</h3>
-                <pre className={`${theme.code} text-cyan-300 font-mono text-sm p-4 rounded-lg overflow-x-auto h-96`}>
+                <pre className="code-block text-cyan-300 font-mono text-sm p-4 rounded-lg overflow-x-auto h-96">
                   {challengeState.lesson.challenge.solution}
                 </pre>
-                <p className={`mt-4 text-sm ${theme.textTertiary} italic`}>
+                <p className="mt-4 text-sm text-tertiary italic">
                   Note: This is one possible solution. Your approach may differ and still be correct!
                 </p>
               </div>
