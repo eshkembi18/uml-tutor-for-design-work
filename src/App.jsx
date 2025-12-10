@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
 import classDiagramImg from './assets/class-diagram.png';
 import umlClassImg from './assets/uml-diagram.svg';
-import orderExampleImg from './assets/order1:order.svg';
+import orderExampleImg from './assets/order1.svg';
 import componentImg from './assets/component.svg';
 import usecaseImg from './assets/usecase.svg';
 import sequenceImg from './assets/sequence.svg';
@@ -16,7 +16,7 @@ import './App.css';
 const lessonImages = {
   'class-diagram': classDiagramImg,
   'uml-class': umlClassImg,
-  'order1:order': orderExampleImg,
+  'order1': orderExampleImg,
   component: componentImg,
   usecase: usecaseImg,
   sequence: sequenceImg,
@@ -287,7 +287,7 @@ Key Differences from Class Diagrams:
 • No methods shown (only data)
 
 Example - E-commerce Order:
-[IMAGE:order1:order]
+[IMAGE:order1]
 
 Use Cases:
 • Testing scenarios
