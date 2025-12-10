@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
 import classDiagramImg from './assets/class-diagram.svg';
-import umlClassImg from './assets/uml-class.png';
+import umlClassImg from './assets/uml-diagram.svg';
 import './App.css';
 
 const lessonImages = {
