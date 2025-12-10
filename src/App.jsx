@@ -1551,12 +1551,13 @@ When to Use:
                 if (block.type === 'image') {
                   const imgSrc = lessonImages[block.id];
                   if (!imgSrc) return null;
+                  const sizeClass = block.id === 'uml-class' ? 'max-w-[200px]' : 'max-w-lg';
                   return (
                     <div key={`img-${idx}`} className="flex justify-center">
                       <img
                         src={imgSrc}
                         alt={`Diagram for ${currentLesson.title}`}
-                        className="w-full max-w-lg rounded-xl border border-theme shadow-lg"
+                        className={`w-full ${sizeClass} rounded-xl border border-theme shadow-lg`}
                       />
                     </div>
                   );
