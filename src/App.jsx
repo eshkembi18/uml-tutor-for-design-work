@@ -11,7 +11,16 @@ const UMLTutor = () => {
   const [currentView, setCurrentView] = useState('home');
   const [currentSection, setCurrentSection] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') return true;
+      if (saved === 'light') return false;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch (e) {
+      return true;
+    }
+  });
   const [userProgress, setUserProgress] = useState({
     completedLessons: [],
     points: 0,
@@ -23,6 +32,53 @@ const UMLTutor = () => {
   const [pointsEarned, setPointsEarned] = useState(0);
   const [quizState, setQuizState] = useState(null);
   const [challengeState, setChallengeState] = useState(null);
+
+  // Sync theme class on the document root and persist preference
+  useEffect(() => {
+    const classDark = 'theme-dark';
+    const classLight = 'theme-light';
+    const root = document.documentElement;
+    root.classList.remove(classDark, classLight);
+    root.classList.add(darkMode ? classDark : classLight);
+    console.debug('[theme] applied', darkMode ? 'dark' : 'light', 'root classes:', root.className);
+    try {
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    } catch (e) {
+      // ignore
+    }
+
+    // handle system preference changes
+    const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e) => {
+      // only change when user hasn't explicitly chosen a theme
+      try {
+        const saved = localStorage.getItem('theme');
+        if (!saved) setDarkMode(e.matches);
+      } catch (err) {}
+    };
+    if (mq && mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq && mq.addListener) mq.addListener(onChange);
+
+    return () => {
+      if (mq && mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else if (mq && mq.removeListener) mq.removeListener(onChange);
+    };
+  }, [darkMode]);
+
+  // Stable toggle function that updates document root immediately
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('theme', next ? 'dark' : 'light');
+      } catch (e) {}
+      const root = document.documentElement;
+      root.classList.remove('theme-dark', 'theme-light');
+      root.classList.add(next ? 'theme-dark' : 'theme-light');
+      console.debug('[theme] toggled', next ? 'dark' : 'light', 'root classes now:', root.className);
+      return next;
+    });
+  };
 
   const badges = [
     { id: 'first_lesson', name: 'First Steps', icon: '🎯', description: 'Complete your first lesson', requirement: 1 },
@@ -1237,7 +1293,7 @@ When to Use:
         {/* Theme Toggle Button */}
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={toggleTheme}
             className={`card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg`}
             title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
@@ -1423,7 +1479,7 @@ When to Use:
               Back to Home
             </button>
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
@@ -1707,7 +1763,7 @@ When to Use:
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-end mb-4">
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
