@@ -34,6 +34,7 @@ const UMLTutor = () => {
     const root = document.documentElement;
     root.classList.remove(classDark, classLight);
     root.classList.add(darkMode ? classDark : classLight);
+    console.debug('[theme] applied', darkMode ? 'dark' : 'light', 'root classes:', root.className);
     try {
       localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     } catch (e) {
@@ -68,6 +69,7 @@ const UMLTutor = () => {
       const root = document.documentElement;
       root.classList.remove('theme-dark', 'theme-light');
       root.classList.add(next ? 'theme-dark' : 'theme-light');
+      console.debug('[theme] toggled', next ? 'dark' : 'light', 'root classes now:', root.className);
       return next;
     });
   };
