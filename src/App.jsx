@@ -1551,7 +1551,7 @@ When to Use:
                 if (block.type === 'image') {
                   const imgSrc = lessonImages[block.id];
                   if (!imgSrc) return null;
-                  const sizeClass = block.id === 'uml-class' ? 'max-w-[200px]' : 'max-w-lg';
+                  const sizeClass = block.id === 'uml-class' ? 'max-w-[160px]' : 'max-w-lg';
                   return (
                     <div key={`img-${idx}`} className="flex justify-center">
                       <img
