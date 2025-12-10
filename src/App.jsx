@@ -2,11 +2,29 @@ import { useState } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
 import classDiagramImg from './assets/class-diagram.png';
 import umlClassImg from './assets/uml-diagram.svg';
+import orderExampleImg from './assets/order1:order.svg';
+import componentImg from './assets/component.svg';
+import usecaseImg from './assets/usecase.svg';
+import sequenceImg from './assets/sequence.svg';
+import activityImg from './assets/activity.svg';
+import stateImg from './assets/state.svg';
+import deploymentImg from './assets/deployment.svg';
+import packageImg from './assets/package.svg';
+import communicationImg from './assets/communication.svg';
 import './App.css';
 
 const lessonImages = {
   'class-diagram': classDiagramImg,
   'uml-class': umlClassImg,
+  'order1:order': orderExampleImg,
+  component: componentImg,
+  usecase: usecaseImg,
+  sequence: sequenceImg,
+  activity: activityImg,
+  state: stateImg,
+  deployment: deploymentImg,
+  package: packageImg,
+  communication: communicationImg,
 };
 
 const UMLTutor = () => {
@@ -269,23 +287,7 @@ Key Differences from Class Diagrams:
 • No methods shown (only data)
 
 Example - E-commerce Order:
-┌────────────────────┐
-│ order1:Order       │
-├────────────────────┤
-│ orderID = "ORD001" │
-│ date = "2025-11-05"│
-│ total = 99.99      │
-└────────────────────┘
-         │
-         │ contains
-         ▼
-┌────────────────────┐
-│ item1:Product      │
-├────────────────────┤
-│ name = "Laptop"    │
-│ price = 799.99     │
-│ quantity = 1       │
-└────────────────────┘
+[IMAGE:order1:order]
 
 Use Cases:
 • Testing scenarios
@@ -324,33 +326,14 @@ Use Cases:
           content: `Component Diagrams show the organization and dependencies among software components. They model the physical aspects of object-oriented systems.
 
 Component Notation:
-┌─────────────────────┐
-│  ┌──┐              │
-│  │  │ ComponentName│  ← Component symbol
-│  └──┘              │
-└─────────────────────┘
+[IMAGE:component]
 
 Interfaces:
 ○─ Provided Interface (lollipop) - services offered
 ─( Required Interface (socket) - services needed
 
 Example - Web Application:
-┌─────────────────┐
-│  ┌──┐          │
-│  │  │ WebUI    │○── HTTP
-└─────────────────┘
-       │ uses
-       ▼
-┌─────────────────┐
-│  ┌──┐          │
-│  │  │ API      │○── REST
-└─────────────────┘
-       │ uses
-       ▼
-┌─────────────────┐
-│  ┌──┐          │
-│  │  │ Database │○── SQL
-└─────────────────┘
+[IMAGE:component]
 
 Key Elements:
 • Components - modular units
@@ -403,16 +386,7 @@ Benefits:
           hasChallenge: true,
           content: `Use Case Diagrams capture system functionality from a user's perspective. They show what the system does, not how it does it.
 
-Elements:
-  ┌─────┐
-  │ o   │  ← Actor (stick figure)
-  │/│\\  │
-  │/ \\  │
-  └─────┘
 
-   (Use Case)  ← Oval shape
-
-  System Boundary  ← Rectangle
 
 Relationships:
 ──── Association  - actor uses use case
@@ -420,21 +394,7 @@ Relationships:
 - - ▷ Extend      - optional variation
 
 Example - ATM System:
-        ┌────────────────────────┐
-   o    │    ATM System         │
-  /|\\   │                        │
-  / \\   │  (Withdraw Money)     │
-Customer│         │              │
-        │         │ <<include>>  │
-        │         ▼              │
-        │  (Verify PIN)          │
-        │                        │
-        │  (Check Balance)       │
-        │         │              │
-        │         │ <<extend>>   │
-        │         ▼              │
-        │  (Print Receipt)       │
-        └────────────────────────┘
+[IMAGE:usecase]
 
 Actor Types:
 • Primary - initiates use case
@@ -520,15 +480,6 @@ Customer │         │                         │
           hasChallenge: true,
           content: `Sequence Diagrams show how objects interact over time. They emphasize the order of messages exchanged between objects.
 
-Basic Structure:
-Actor     Object1    Object2
-  │          │          │
-  │──msg1───>│          │  ← Message
-  │          │──msg2───>│
-  │          │<──ret────│  ← Return
-  │<──done───│          │
-  │          │          │
-
 Elements:
 • Lifeline   - vertical dashed line
 • Activation - thin rectangle on lifeline
@@ -543,16 +494,7 @@ Message Types:
 ───X  Message lost
 X───  Message found
 
-Example - Login Process:
-User    WebPage   Server    Database
- │         │         │          │
- │─login──>│         │          │
- │         │─validate>│          │
- │         │         │─query───>│
- │         │         │<─result──│
- │         │<─token──│          │
- │<─success│         │          │
- │         │         │          │
+[IMAGE:sequence]
 
 Activation boxes show when object is active
 Self-calls show recursion or internal processing
@@ -633,49 +575,13 @@ Basic Elements:
  ▬▬▬ Fork/Join (thick bar)
 
 Example - Order Processing:
-        (●) Start
-         │
-    ┌────────────┐
-    │Receive Order│
-    └────────────┘
-         │
-        ◇ Valid?
-       ╱ ╲
-    Yes   No
-     │     │
-     │  ┌──────────┐
-     │  │Reject    │
-     │  │Order     │
-     │  └──────────┘
-     │     │
-     │    (◉) End
-     │
-  ┌──────────┐
-  │Process   │
-  │Payment   │
-  └──────────┘
-     │
-  ┌──────────┐
-  │Ship      │
-  │Order     │
-  └──────────┘
-     │
-    (◉) End
+[IMAGE:activity]
 
 Advanced Features:
 • Swimlanes - show responsibilities
 • Object nodes - data flow
 • Signals - send/receive events
 • Exception handlers
-
-Parallel Execution:
-     │
-   ▬▬▬▬▬ Fork
-   │   │
- Task1 Task2
-   │   │
-   ▬▬▬▬▬ Join
-     │
 
 Use Cases:
 • Business process modeling
@@ -712,50 +618,7 @@ Use Cases:
           hasQuiz: true,
           content: `State Diagrams (State Machine Diagrams) model the states of an object and transitions between states during its lifetime.
 
-Elements:
- (●) Initial state
-┌─────────┐
-│  State  │ State box
-└─────────┘
-─event──> Transition
- (◉) Final state
-
-Example - Document Lifecycle:
-    (●) Initial
-     │
-     │ create
-     ▼
-┌─────────┐
-│  Draft  │
-└─────────┘
-     │ submit
-     ▼
-┌─────────┐
-│ Review  │◄──┐
-└─────────┘   │
-  │      │    │ revise
-  │reject│    │
-  ▼      │    │
-┌────────┴────┐
-│  Rejected   │
-└─────────────┘
-  │ approve
-  ▼
-┌─────────┐
-│Published│
-└─────────┘
-     │ archive
-     ▼
-    (◉) End
-
-State Anatomy:
-┌────────────────┐
-│   State Name   │
-├────────────────┤
-│entry/action    │ Actions on entering
-│exit/action     │ Actions on exiting
-│do/activity     │ Ongoing activity
-└────────────────┘
+[IMAGE:state]
 
 Transition Syntax:
 event [guard] / action
@@ -815,42 +678,7 @@ Applications:
           hasQuiz: true,
           content: `Deployment Diagrams show the physical architecture of the system - hardware, software, and their relationships.
 
-Node Notation:
-┌─────────────────┐
-│ <<device>>      │
-│   NodeName      │  ← 3D box
-└─────────────────┘
-
-Artifact:
-┌─────────────────┐
-│   filename.ext  │
-└─────────────────┘
-
-Example - Web Application:
-┌──────────────────┐
-│ <<device>>       │
-│ Client Computer  │
-├──────────────────┤
-│ Web Browser      │
-└──────────────────┘
-        │ HTTP
-        ▼
-┌──────────────────┐
-│ <<device>>       │
-│  Web Server      │
-├──────────────────┤
-│ Apache/Nginx     │
-│   app.war        │
-└──────────────────┘
-        │ JDBC
-        ▼
-┌──────────────────┐
-│ <<device>>       │
-│ Database Server  │
-├──────────────────┤
-│ PostgreSQL       │
-│   database.db    │
-└──────────────────┘
+[IMAGE:deployment]
 
 Communication Paths:
 ────  Association
@@ -909,59 +737,7 @@ Shows:
           hasQuiz: true,
           content: `Package Diagrams organize model elements into groups (packages) and show dependencies between packages.
 
-Package Notation:
-┌─────────────┐
-│ PackageName │
-├─────────────┤
-│             │
-│  Contents   │
-│             │
-└─────────────┘
-
-Or tabbed notation:
-┌──────────┬──┐
-│PackageName  │
-├─────────────┤
-│             │
-└─────────────┘
-
-Dependencies:
-- - -> <<import>> - public access
-- - -> <<access>> - private access
-- - -> <<merge>>  - merge contents
-
-Example - Application Structure:
-┌────────────┐
-│    UI      │
-│ Presentation│
-└────────────┘
-      │ <<use>>
-      ▼
-┌────────────┐
-│  Business  │
-│   Logic    │
-└────────────┘
-      │ <<use>>
-      ▼
-┌────────────┐
-│    Data    │
-│   Access   │
-└────────────┘
-      │ <<use>>
-      ▼
-┌────────────┐
-│  Database  │
-│   Models   │
-└────────────┘
-
-Nested Packages:
-┌─────────────────────────┐
-│     Application         │
-├─────────────────────────┤
-│ ┌──────┐   ┌──────┐   │
-│ │ Core │   │Utils │   │
-│ └──────┘   └──────┘   │
-└─────────────────────────┘
+[IMAGE:package]
 
 Visibility:
 + Public
@@ -1012,38 +788,7 @@ Best Practices:
           hasQuiz: true,
           content: `Communication Diagrams (formerly Collaboration Diagrams) show object interactions emphasizing the structural organization rather than time sequence.
 
-Elements:
-┌─────────────┐
-│obj:ClassName│  Object
-└─────────────┘
-     │
-     │ 1: message()
-     ▼
-┌─────────────┐
-│obj2:Class2  │
-└─────────────┘
-
-Message Numbering:
-1:      First message
-1.1:    Nested call
-1.2:    Another nested call
-2:      Second message
-
-Example - Shopping Cart:
-┌─────────┐ 1:addItem() ┌─────────┐
-│customer │───────────>│  cart   │
-└─────────┘            └─────────┘
-                            │
-                  1.1:create()│
-                            ▼
-                       ┌─────────┐
-              1.2:add()│cartItem │
-        ┌──────────────│         │
-        │              └─────────┘
-        ▼                   │
-   ┌─────────┐   1.2.1:getPrice()
-   │ product │<───────┘
-   └─────────┘
+[IMAGE:communication]
 
 vs Sequence Diagram:
 • Shows structure, not timeline
