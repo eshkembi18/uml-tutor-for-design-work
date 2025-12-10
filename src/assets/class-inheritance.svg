@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 240" width="170" height="240" role="img" aria-labelledby="title desc">
+  <title id="title">Class Inheritance Example</title>
+  <desc id="desc">Vehicle class inheriting into Car class with attributes and methods.</desc>
+  <rect x="0" y="0" width="170" height="240" fill="#ffffff" />
+  <g stroke="#9ca3af" fill="#f3f4f6" stroke-width="1.6" stroke-linejoin="round">
+    <rect x="34" y="18" width="102" height="90" rx="4" />
+    <rect x="34" y="148" width="102" height="90" rx="4" />
+  </g>
+  <g fill="#f3f4f6" stroke="none">
+    <rect x="34" y="18" width="102" height="30" />
+    <rect x="34" y="148" width="102" height="30" />
+    <rect x="34" y="70" width="102" height="22" />
+    <rect x="34" y="200" width="102" height="22" />
+  </g>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#111827" font-weight="700">
+    <circle cx="46" cy="33" r="13" fill="#c7dcd0" stroke="#4b5563" stroke-width="1.2" />
+    <text x="46" y="37" text-anchor="middle">C</text>
+    <text x="64" y="38" font-weight="700">Vehicle</text>
+
+    <circle cx="46" cy="163" r="13" fill="#c7dcd0" stroke="#4b5563" stroke-width="1.2" />
+    <text x="46" y="167" text-anchor="middle">C</text>
+    <text x="64" y="168" font-weight="700">Car</text>
+  </g>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#111827" font-weight="600">
+    <text x="44" y="98">-speed</text>
+    <text x="44" y="116">-color</text>
+    <text x="44" y="228">-doors</text>
+  </g>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#111827" font-weight="700">
+    <text x="44" y="134">+drive()</text>
+    <text x="44" y="246">+openDoor()</text>
+  </g>
+  <g stroke="#111827" stroke-width="1.6" fill="none" stroke-linecap="round">
+    <line x1="85" y1="108" x2="85" y2="148" />
+    <path d="M85 128 L78 140 L92 140 Z" fill="#ffffff" />
+  </g>
+</svg>

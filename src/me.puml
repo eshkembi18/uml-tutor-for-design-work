@@ -1,0 +1,17 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Vehicle {
+  - speed
+  - color
+  + drive()
+}
+
+class Car {
+  - doors
+  + openDoor()
+}
+
+Vehicle <|-- Car
+
+@enduml
