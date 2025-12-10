@@ -5,7 +5,16 @@ const UMLTutor = () => {
   const [currentView, setCurrentView] = useState('home');
   const [currentSection, setCurrentSection] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') return true;
+      if (saved === 'light') return false;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch (e) {
+      return true;
+    }
+  });
   const [userProgress, setUserProgress] = useState({
     completedLessons: [],
     points: 0,
@@ -17,6 +26,37 @@ const UMLTutor = () => {
   const [pointsEarned, setPointsEarned] = useState(0);
   const [quizState, setQuizState] = useState(null);
   const [challengeState, setChallengeState] = useState(null);
+
+  // Sync theme class on the document root and persist preference
+  useEffect(() => {
+    const classDark = 'theme-dark';
+    const classLight = 'theme-light';
+    const root = document.documentElement;
+    root.classList.remove(classDark, classLight);
+    root.classList.add(darkMode ? classDark : classLight);
+    try {
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    } catch (e) {
+      // ignore
+    }
+
+    // handle system preference changes
+    const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e) => {
+      // only change when user hasn't explicitly chosen a theme
+      try {
+        const saved = localStorage.getItem('theme');
+        if (!saved) setDarkMode(e.matches);
+      } catch (err) {}
+    };
+    if (mq && mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq && mq.addListener) mq.addListener(onChange);
+
+    return () => {
+      if (mq && mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else if (mq && mq.removeListener) mq.removeListener(onChange);
+    };
+  }, [darkMode]);
 
   const badges = [
     { id: 'first_lesson', name: 'First Steps', icon: '🎯', description: 'Complete your first lesson', requirement: 1 },
