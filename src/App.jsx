@@ -1,11 +1,5 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
-import classDiagramImg from './assets/class-diagram.svg';
-
-const lessonImages = {
-  'class-diagram': classDiagramImg,
-};
-import './App.css';
 
 const UMLTutor = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -152,11 +146,16 @@ Core OOP Concepts:
           hasChallenge: true,
           content: `Class Diagrams are the most commonly used UML diagram. They show the static structure of a system by depicting classes, attributes, operations, and relationships.
 
-Class Structure (see diagram below):
-• Class Name (bold, centered)
-• Attributes list (- private, + public, # protected, ~ package)
-• Methods/operations list with visibility
-[IMAGE:class-diagram]
+Class Structure:
+┌─────────────────┐
+│   ClassName     │  ← Class Name (bold, centered)
+├─────────────────┤
+│ - attribute1    │  ← Attributes (- private, + public, # protected)
+│ + attribute2    │
+├─────────────────┤
+│ + method1()     │  ← Methods/Operations
+│ - method2()     │
+└─────────────────┘
 
 Visibility Modifiers:
 + public    - accessible from anywhere
