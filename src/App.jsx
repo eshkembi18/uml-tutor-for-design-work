@@ -58,6 +58,20 @@ const UMLTutor = () => {
     };
   }, [darkMode]);
 
+  // Stable toggle function that updates document root immediately
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('theme', next ? 'dark' : 'light');
+      } catch (e) {}
+      const root = document.documentElement;
+      root.classList.remove('theme-dark', 'theme-light');
+      root.classList.add(next ? 'theme-dark' : 'theme-light');
+      return next;
+    });
+  };
+
   const badges = [
     { id: 'first_lesson', name: 'First Steps', icon: '🎯', description: 'Complete your first lesson', requirement: 1 },
     { id: 'quiz_master', name: 'Quiz Master', icon: '🧠', description: 'Score 100% on any quiz', requirement: 'perfect_quiz' },
@@ -1276,7 +1290,7 @@ When to Use:
         {/* Theme Toggle Button */}
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={toggleTheme}
             className={`card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg`}
             title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
@@ -1462,7 +1476,7 @@ When to Use:
               Back to Home
             </button>
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
@@ -1746,7 +1760,7 @@ When to Use:
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-end mb-4">
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleTheme}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
               {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
