@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
 import classDiagramImg from './assets/class-diagram.svg';
+import umlClassImg from './assets/uml-class.png';
+import './App.css';
 
 const lessonImages = {
   'class-diagram': classDiagramImg,
+  'uml-class': umlClassImg,
 };
-import './App.css';
 
 const UMLTutor = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -257,12 +259,7 @@ Include appropriate attributes, methods, and relationships.`,
           content: `Object Diagrams show instances of classes at a specific moment in time. They're like snapshots of the system showing actual objects and their relationships.
 
 Object Notation:
-┌─────────────────────┐
-│ objectName:ClassName│  ← Underlined (name:type)
-├─────────────────────┤
-│ attribute1 = value1 │  ← Actual values
-│ attribute2 = value2 │
-└─────────────────────┘
+[IMAGE:uml-class]
 
 Key Differences from Class Diagrams:
 • Shows instances, not templates
