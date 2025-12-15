@@ -36,6 +36,8 @@ const UMLTutor = () => {
   const [currentSection, setCurrentSection] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
   const [darkMode, setDarkMode] = useState(true);
+  const [classFormInputs, setClassFormInputs] = useState({});
+  const [relationshipForm, setRelationshipForm] = useState({ fromId: '', toId: '', type: 'association', label: '' });
   const [userProgress, setUserProgress] = useState({
     completedLessons: [],
     points: 0,
@@ -935,38 +937,120 @@ When to Use:
     }
   };
 
+  const parseRequiredClasses = (scenarioText) => {
+    const matches = [];
+    const regex = /(\b[A-Z][a-zA-Z0-9_]*)\s+class/gi;
+    let match;
+    while ((match = regex.exec(scenarioText || '')) !== null) {
+      matches.push(match[1]);
+    }
+    return Array.from(new Set(matches));
+  };
+
+  const createTemplateDiagram = (lesson) => {
+    const required = parseRequiredClasses(lesson.challenge.scenario);
+    const fallback = ['Class1', 'Class2', 'Class3'];
+    const names = required.length ? required : fallback;
+    const classes = names.map((name, idx) => ({
+      id: `c${Date.now()}-${idx}`,
+      name,
+      attributes: [],
+      methods: []
+    }));
+    return { classes, relationships: [] };
+  };
+
+  const storageKeyForLesson = (lessonId) => `uml-challenge-${lessonId}`;
+
   const startChallenge = (lesson) => {
+    const storageKey = storageKeyForLesson(lesson.id);
+    let diagram = createTemplateDiagram(lesson);
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.classes && parsed?.relationships) {
+          diagram = parsed;
+        }
+      }
+    } catch (e) {
+      // ignore parse errors and fall back to template
+    }
+
+    const firstId = diagram.classes[0]?.id || '';
+    const secondId = diagram.classes[1]?.id || firstId;
+    setClassFormInputs({});
+    setRelationshipForm({ fromId: firstId, toId: secondId, type: 'association', label: '' });
+
     setChallengeState({
       lesson: lesson,
-      userSolution: '',
+      userSolution: generateSolutionFromDiagram(diagram),
       hintsUsed: 0,
       showSolution: false,
       submitted: false,
-      selfCheck: {
-        classes: false,
-        attributes: false,
-        relationships: false
-      },
-      feedback: ''
+      feedback: '',
+      diagram,
+      selectedClassId: diagram.classes[0]?.id || null,
+      edgeType: 'association',
+      nodeEditor: {
+        title: diagram.classes[0]?.name || '',
+        attributesText: diagram.classes[0]?.attributes?.join('\n') || '',
+        methodsText: diagram.classes[0]?.methods?.join('\n') || ''
+      }
     });
     setCurrentView('challenge');
   };
 
+  const buildReadiness = (diagram, scenarioText) => {
+    const scenario = (scenarioText || '').toLowerCase();
+    const requiredNames = parseRequiredClasses(scenarioText || '').map(n => n.toLowerCase());
+    const titles = diagram.classes.map(c => (c.name || '').toLowerCase());
+    const hasRequired = requiredNames.length === 0 || requiredNames.every(name => titles.some(t => t.includes(name)));
+
+    return {
+      classesOk: diagram.classes.length >= 3,
+      relationshipsOk: diagram.relationships.length >= 1,
+      requiredOk: hasRequired
+    };
+  };
+
+  const generateSolutionFromDiagram = (diagram) => {
+    const idToTitle = Object.fromEntries(diagram.classes.map(c => [c.id, c.name || c.id]));
+    const classLines = diagram.classes.map(c => {
+      const attrs = c.attributes?.filter(Boolean).join(', ') || '';
+      const methods = c.methods?.filter(Boolean).join(', ') || '';
+      return `- ${c.name || '(unnamed)'}: attrs=[${attrs}] methods=[${methods}]`;
+    });
+    const relLines = diagram.relationships.map(r => {
+      const label = r.label ? `(${r.label})` : '';
+      return `- ${idToTitle[r.fromId] || r.fromId} --${r.type}${label}--> ${idToTitle[r.toId] || r.toId}`;
+    });
+    return [
+      'Classes:',
+      ...classLines,
+      'Relationships:',
+      ...relLines
+    ].join('\n');
+  };
+
   const submitChallenge = () => {
-    const readyToSubmit = challengeState.userSolution.trim() && Object.values(challengeState.selfCheck).every(Boolean);
+    const readiness = buildReadiness(challengeState.diagram, challengeState.lesson.challenge.scenario);
+    const readyToSubmit = readiness.classesOk && readiness.relationshipsOk && readiness.requiredOk;
+
     if (!readyToSubmit) {
-      setChallengeState({
-        ...challengeState,
-        feedback: 'Please add your diagram/notes and check each item to confirm you covered the basics.'
-      });
+      setChallengeState(prev => ({
+        ...prev,
+        submitted: true,
+        feedback: 'Add at least 3 classes, connect them with a relationship, and include the required classes from the scenario.'
+      }));
       return;
     }
 
-    setChallengeState({
-      ...challengeState,
+    setChallengeState(prev => ({
+      ...prev,
       submitted: true,
       feedback: ''
-    });
+    }));
 
     if (!userProgress.challenges[challengeState.lesson.id]) {
       setUserProgress(prev => ({
@@ -1524,13 +1608,195 @@ When to Use:
   };
 
   const renderChallenge = () => {
-    const selfCheckItems = [
-      { id: 'classes', label: 'I listed all required classes (e.g., Book, Member, Librarian).' },
-      { id: 'attributes', label: 'I captured key attributes and methods for each class.' },
-      { id: 'relationships', label: 'I drew the relationships between classes (inheritance/association/etc.).' }
-    ];
-    const allChecklistChecked = Object.values(challengeState.selfCheck).every(Boolean);
-    const readyToSubmit = challengeState.userSolution.trim() && allChecklistChecked;
+    const storageKey = storageKeyForLesson(challengeState.lesson.id);
+
+    // Patch-update the diagram so individual class objects are never replaced wholesale.
+    const updateDiagram = (mutator) => {
+      setChallengeState(prev => {
+        const nextDiagram = typeof mutator === 'function' ? mutator(prev.diagram) : mutator;
+        const nextSolution = generateSolutionFromDiagram(nextDiagram);
+        const nextState = {
+          ...prev,
+          diagram: nextDiagram,
+          userSolution: nextSolution
+        };
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(nextDiagram));
+        } catch (e) {
+          // ignore storage errors
+        }
+        return nextState;
+      });
+    };
+
+    const readiness = buildReadiness(challengeState.diagram, challengeState.lesson.challenge.scenario);
+    const readyToSubmit = readiness.classesOk && readiness.relationshipsOk && readiness.requiredOk;
+
+    const edgeTypeLabels = {
+      association: 'Association',
+      aggregation: 'Aggregation',
+      composition: 'Composition',
+      inheritance: 'Inheritance',
+      realization: 'Realization'
+    };
+
+    const selectedClass = challengeState.diagram.classes.find(c => c.id === challengeState.selectedClassId) || null;
+
+    const selectClass = (classId) => {
+      const cls = challengeState.diagram.classes.find(c => c.id === classId);
+      setChallengeState(prev => ({
+        ...prev,
+        selectedClassId: classId,
+        nodeEditor: cls
+          ? {
+              title: cls.name || '',
+              attributesText: (cls.attributes || []).join('\n'),
+              methodsText: (cls.methods || []).join('\n')
+            }
+          : prev.nodeEditor
+      }));
+    };
+
+    const updateClassName = (classId, name) => {
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls => cls.id === classId ? { ...cls, name } : cls)
+      }));
+    };
+
+    const addAttribute = (classId, value) => {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls =>
+          cls.id === classId ? { ...cls, attributes: [...cls.attributes, trimmed] } : cls
+        )
+      }));
+      setClassFormInputs(prev => ({ ...prev, [classId]: { ...(prev[classId] || {}), attr: '' } }));
+    };
+
+    const removeAttribute = (classId, idx) => {
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls =>
+          cls.id === classId
+            ? { ...cls, attributes: cls.attributes.filter((_, i) => i !== idx) }
+            : cls
+        )
+      }));
+    };
+
+    const addMethod = (classId, value) => {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls =>
+          cls.id === classId ? { ...cls, methods: [...cls.methods, trimmed] } : cls
+        )
+      }));
+      setClassFormInputs(prev => ({ ...prev, [classId]: { ...(prev[classId] || {}), method: '' } }));
+    };
+
+    const removeMethod = (classId, idx) => {
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls =>
+          cls.id === classId
+            ? { ...cls, methods: cls.methods.filter((_, i) => i !== idx) }
+            : cls
+        )
+      }));
+    };
+
+    const addRelationship = (fromId, type, toId, label) => {
+      if (!fromId || !toId || fromId === toId) return;
+      updateDiagram(diagram => ({
+        ...diagram,
+        relationships: [
+          ...diagram.relationships,
+          { id: `r${Date.now()}`, fromId, toId, type, label: label.trim() }
+        ]
+      }));
+      setRelationshipForm(prev => ({ ...prev, label: '' }));
+    };
+
+    const removeRelationship = (relId) => {
+      updateDiagram(diagram => ({
+        ...diagram,
+        relationships: diagram.relationships.filter(r => r.id !== relId)
+      }));
+    };
+
+    const saveNodeEdits = () => {
+      if (!selectedClass) return;
+      const { title, attributesText, methodsText } = challengeState.nodeEditor;
+      // Patch only the selected class so other class details stay intact.
+      updateDiagram(diagram => ({
+        ...diagram,
+        classes: diagram.classes.map(cls =>
+          cls.id === selectedClass.id
+            ? {
+                ...cls,
+                name: title || cls.name,
+                attributes: attributesText.split('\n').map(s => s.trim()).filter(Boolean),
+                methods: methodsText.split('\n').map(s => s.trim()).filter(Boolean)
+              }
+            : cls
+        )
+      }));
+    };
+
+    const clearDiagram = () => {
+      if (!confirm('Clear the diagram?')) return;
+      const fresh = createTemplateDiagram(challengeState.lesson);
+      updateDiagram(fresh);
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (e) {
+        // ignore
+      }
+      setClassFormInputs({});
+      const firstId = fresh.classes[0]?.id || '';
+      const secondId = fresh.classes[1]?.id || firstId;
+      setRelationshipForm({ fromId: firstId, toId: secondId, type: 'association', label: '' });
+      setChallengeState(prev => ({
+        ...prev,
+        selectedClassId: fresh.classes[0]?.id || null,
+        nodeEditor: {
+          title: fresh.classes[0]?.name || '',
+          attributesText: '',
+          methodsText: ''
+        }
+      }));
+    };
+
+    const layoutClasses = (classes) => {
+      const positions = {};
+      const cols = 3;
+      const w = 220;
+      const h = 140;
+      const gapX = 40;
+      const gapY = 40;
+      const margin = 20;
+      classes.forEach((cls, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        positions[cls.id] = {
+          x: margin + col * (w + gapX),
+          y: margin + row * (h + gapY),
+          w,
+          h
+        };
+      });
+      const totalRows = Math.max(1, Math.ceil(classes.length / cols));
+      const width = margin * 2 + cols * w + (cols - 1) * gapX;
+      const height = margin * 2 + totalRows * h + (totalRows - 1) * gapY;
+      return { positions, width, height };
+    };
+
+    const { positions, width: canvasWidth, height: canvasHeight } = layoutClasses(challengeState.diagram.classes);
 
     return (
       <div className={`app-shell ${themeClass}`}>
@@ -1586,35 +1852,345 @@ When to Use:
             )}
           </div>
 
+          <div className="card rounded-2xl p-6 shadow-2xl mb-6">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <button
+                onClick={clearDiagram}
+                className="px-3 py-2 rounded-lg border border-theme text-sm text-secondary hover:text-primary"
+              >
+                Clear Diagram
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {challengeState.diagram.classes.map(cls => {
+                const inputs = classFormInputs[cls.id] || { attr: '', method: '' };
+                return (
+                  <div key={cls.id} className={`card border rounded-xl p-4 space-y-3 ${challengeState.selectedClassId === cls.id ? 'ring-2 ring-cyan-500' : ''}`}>
+                    <div className="flex justify-between items-center">
+                      <input
+                        className="input-field w-full px-3 py-2 rounded border"
+                        value={cls.name}
+                        onChange={(e) => updateClassName(cls.id, e.target.value)}
+                        onFocus={() => selectClass(cls.id)}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-tertiary uppercase tracking-wide">Attributes</span>
+                      </div>
+                      <div className="space-y-1">
+                        {cls.attributes.map((attr, idx) => (
+                          <div key={`${cls.id}-attr-${idx}`} className="flex items-center gap-2 text-sm">
+                            <span className="flex-1 text-secondary">{attr}</span>
+                            <button
+                              onClick={() => removeAttribute(cls.id, idx)}
+                              className="text-xs text-red-400 hover:text-red-300"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          className="input-field flex-1 px-2 py-1 rounded border text-sm"
+                          placeholder="+ attribute"
+                          value={inputs.attr || ''}
+                          onChange={(e) => setClassFormInputs(prev => ({ ...prev, [cls.id]: { ...(prev[cls.id] || {}), attr: e.target.value } }))}
+                          onFocus={() => selectClass(cls.id)}
+                        />
+                        <button
+                          onClick={() => { addAttribute(cls.id, inputs.attr || ''); }}
+                          className="text-xs px-3 py-1 rounded bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-tertiary uppercase tracking-wide">Methods</span>
+                      </div>
+                      <div className="space-y-1">
+                        {cls.methods.map((method, idx) => (
+                          <div key={`${cls.id}-method-${idx}`} className="flex items-center gap-2 text-sm">
+                            <span className="flex-1 text-secondary">{method}</span>
+                            <button
+                              onClick={() => removeMethod(cls.id, idx)}
+                              className="text-xs text-red-400 hover:text-red-300"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          className="input-field flex-1 px-2 py-1 rounded border text-sm"
+                          placeholder="+ method"
+                          value={inputs.method || ''}
+                          onChange={(e) => setClassFormInputs(prev => ({ ...prev, [cls.id]: { ...(prev[cls.id] || {}), method: e.target.value } }))}
+                          onFocus={() => selectClass(cls.id)}
+                        />
+                        <button
+                          onClick={() => { addMethod(cls.id, inputs.method || ''); }}
+                          className="text-xs px-3 py-1 rounded bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => selectClass(cls.id)}
+                      className="w-full text-xs mt-2 py-2 rounded border border-theme text-secondary hover:text-primary"
+                    >
+                      Edit in Side Panel
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              <div className="card border rounded-xl p-4 space-y-3 lg:col-span-2">
+                <h4 className="font-bold text-secondary">Relationships</h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <select
+                    className="input-field border px-3 py-2 rounded text-sm"
+                    value={relationshipForm.fromId || challengeState.diagram.classes[0]?.id || ''}
+                    onChange={(e) => setRelationshipForm(prev => ({ ...prev, fromId: e.target.value }))}
+                  >
+                    {challengeState.diagram.classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="input-field border px-3 py-2 rounded text-sm"
+                    value={relationshipForm.type}
+                    onChange={(e) => setRelationshipForm(prev => ({ ...prev, type: e.target.value }))}
+                  >
+                    {Object.keys(edgeTypeLabels).map(type => (
+                      <option key={type} value={type}>{edgeTypeLabels[type]}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="input-field border px-3 py-2 rounded text-sm"
+                    value={relationshipForm.toId || challengeState.diagram.classes[1]?.id || ''}
+                    onChange={(e) => setRelationshipForm(prev => ({ ...prev, toId: e.target.value }))}
+                  >
+                    {challengeState.diagram.classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    ))}
+                  </select>
+                  <input
+                    className="input-field border px-3 py-2 rounded text-sm"
+                    placeholder="Label (optional)"
+                    value={relationshipForm.label}
+                    onChange={(e) => setRelationshipForm(prev => ({ ...prev, label: e.target.value }))}
+                  />
+                </div>
+                <button
+                  onClick={() => addRelationship(
+                    relationshipForm.fromId || challengeState.diagram.classes[0]?.id || '',
+                    relationshipForm.type,
+                    relationshipForm.toId || challengeState.diagram.classes[1]?.id || '',
+                    relationshipForm.label || ''
+                  )}
+                  className="mt-3 bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:from-cyan-500 hover:to-blue-500"
+                >
+                  Add Relationship
+                </button>
+
+                <div className="mt-4 space-y-2">
+                  {challengeState.diagram.relationships.map(rel => (
+                    <div key={rel.id} className="flex items-center gap-2 text-sm text-secondary">
+                      <span className="flex-1">
+                        {challengeState.diagram.classes.find(c => c.id === rel.fromId)?.name || rel.fromId}
+                        {' '}
+                        --{rel.type}{rel.label ? `(${rel.label})` : ''}--> {' '}
+                        {challengeState.diagram.classes.find(c => c.id === rel.toId)?.name || rel.toId}
+                      </span>
+                      <button
+                        onClick={() => removeRelationship(rel.id)}
+                        className="text-xs text-red-400 hover:text-red-300"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card border rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-secondary">Side Panel Editor</h4>
+                {selectedClass ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-tertiary">Title</label>
+                      <input
+                        className="input-field w-full px-3 py-2 rounded border mt-1"
+                        value={challengeState.nodeEditor.title}
+                        onChange={(e) => setChallengeState(prev => ({
+                          ...prev,
+                          nodeEditor: { ...prev.nodeEditor, title: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-tertiary">Attributes (one per line)</label>
+                      <textarea
+                        className="input-field w-full px-3 py-2 rounded border mt-1 h-20"
+                        value={challengeState.nodeEditor.attributesText}
+                        onChange={(e) => setChallengeState(prev => ({
+                          ...prev,
+                          nodeEditor: { ...prev.nodeEditor, attributesText: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-tertiary">Methods (one per line)</label>
+                      <textarea
+                        className="input-field w-full px-3 py-2 rounded border mt-1 h-20"
+                        value={challengeState.nodeEditor.methodsText}
+                        onChange={(e) => setChallengeState(prev => ({
+                          ...prev,
+                          nodeEditor: { ...prev.nodeEditor, methodsText: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        saveNodeEdits();
+                        setClassFormInputs(prev => ({ ...prev, [selectedClass.id]: { attr: '', method: '' } }));
+                      }}
+                      className="bg-gradient-to-r from-green-600 to-teal-600 px-4 py-2 rounded-lg font-bold hover:from-green-500 hover:to-teal-500 transition"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-tertiary">Select a class card to edit.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="card rounded-xl border border-theme p-4 shadow-lg">
+              <h4 className="font-bold text-secondary mb-2">Visual Preview</h4>
+              <div className="rounded-xl border border-theme bg-gradient-to-br from-slate-800/10 to-slate-900/10 overflow-hidden">
+                <svg width="100%" height={canvasHeight} viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}>
+                  <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto">
+                      <path d="M0,0 L10,3 L0,6 z" fill="#38bdf8" />
+                    </marker>
+                    <marker id="triangle" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+                      <path d="M0,0 L12,6 L0,12 z" fill="white" stroke="#38bdf8" strokeWidth="1.5" />
+                    </marker>
+                    <marker id="diamond" markerWidth="16" markerHeight="16" refX="16" refY="8" orient="auto">
+                      <path d="M0,8 L8,0 L16,8 L8,16 z" fill="white" stroke="#38bdf8" strokeWidth="1.5" />
+                    </marker>
+                    <marker id="diamond-filled" markerWidth="16" markerHeight="16" refX="16" refY="8" orient="auto">
+                      <path d="M0,8 L8,0 L16,8 L8,16 z" fill="#38bdf8" />
+                    </marker>
+                  </defs>
+
+                  {challengeState.diagram.relationships.map(rel => {
+                    const fromPos = positions[rel.fromId];
+                    const toPos = positions[rel.toId];
+                    if (!fromPos || !toPos) return null;
+                    const x1 = fromPos.x + fromPos.w / 2;
+                    const y1 = fromPos.y + fromPos.h / 2;
+                    const x2 = toPos.x + toPos.w / 2;
+                    const y2 = toPos.y + toPos.h / 2;
+
+                    let markerEnd = 'url(#arrow)';
+                    let markerStart = null;
+                    const isDashed = rel.type === 'realization';
+
+                    if (rel.type === 'inheritance' || rel.type === 'realization') {
+                      markerEnd = 'url(#triangle)';
+                    } else if (rel.type === 'aggregation') {
+                      markerStart = 'url(#diamond)';
+                    } else if (rel.type === 'composition') {
+                      markerStart = 'url(#diamond-filled)';
+                    }
+
+                    return (
+                      <g key={rel.id}>
+                        <line
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke="#38bdf8"
+                          strokeWidth="2"
+                          strokeDasharray={isDashed ? '6 4' : '0'}
+                          markerEnd={markerEnd}
+                          markerStart={markerStart}
+                        />
+                        {rel.label && (
+                          <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 - 6} fill="#38bdf8" fontSize="12" textAnchor="middle">
+                            {rel.label}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })}
+
+                  {challengeState.diagram.classes.map(cls => {
+                    const pos = positions[cls.id];
+                    if (!pos) return null;
+                    return (
+                      <g key={cls.id} transform={`translate(${pos.x}, ${pos.y})`}>
+                        <rect
+                          width={pos.w}
+                          height={pos.h}
+                          rx="6"
+                          ry="6"
+                          fill="#111827"
+                          stroke="#38bdf8"
+                          strokeWidth="2"
+                          opacity="0.95"
+                        />
+                        <rect width={pos.w} height="28" rx="6" ry="6" fill="#0b172a" stroke="#38bdf8" strokeWidth="1.5" />
+                        <text x="10" y={18} fill="white" fontSize="14" fontWeight="700">
+                          {cls.name || 'Class'}
+                        </text>
+                        <line x1="0" y1="40" x2={pos.w} y2="40" stroke="#1f2937" />
+
+                        <text x="10" y="56" fill="#e5e7eb" fontSize="12">
+                          {(cls.attributes && cls.attributes.length ? cls.attributes : ['']).map((line, idx) => (
+                            <tspan key={idx} x="10" dy={idx === 0 ? 0 : 14}>{line}</tspan>
+                          ))}
+                        </text>
+                        <line x1="0" y1={pos.h - 40} x2={pos.w} y2={pos.h - 40} stroke="#1f2937" />
+                        <text x="10" y={pos.h - 22} fill="#e5e7eb" fontSize="12">
+                          {(cls.methods && cls.methods.length ? cls.methods : ['']).map((line, idx) => (
+                            <tspan key={idx} x="10" dy={idx === 0 ? 0 : 14}>{line}</tspan>
+                          ))}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3 items-center">
+              <span className="text-sm font-semibold text-secondary">Readiness:</span>
+              <span className={`text-xs px-2 py-1 rounded ${readiness.classesOk ? 'bg-green-600' : 'bg-slate-600'}`}>≥ 3 classes</span>
+              <span className={`text-xs px-2 py-1 rounded ${readiness.relationshipsOk ? 'bg-green-600' : 'bg-slate-600'}`}>≥ 1 relationship</span>
+              <span className={`text-xs px-2 py-1 rounded ${readiness.requiredOk ? 'bg-green-600' : 'bg-slate-600'}`}>Scenario classes present</span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card rounded-2xl p-6 shadow-2xl">
-              <h3 className="font-bold mb-4 text-xl">Your Solution</h3>
-              <textarea
-                value={challengeState.userSolution}
-                onChange={(e) => setChallengeState({ ...challengeState, userSolution: e.target.value })}
-                placeholder="Describe your diagram (classes, attributes, relationships) or sketch in ASCII. Bullet points are fine!&#10;&#10;Example:&#10;- Classes: Book, Member, Librarian, Library&#10;- Book: title, author, ISBN, availability&#10;- Member borrows Book; Library aggregates Book and Member"
-                className="w-full h-96 input-field code-text font-mono text-sm p-4 rounded-lg border focus:border-cyan-500 focus:outline-none resize-none"
-              />
-              <div className="mt-4 space-y-2">
-                <p className="text-sm text-secondary font-semibold">Quick self-check before submitting:</p>
-                {selfCheckItems.map(item => (
-                  <label key={item.id} className="flex items-start gap-2 text-sm text-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mt-1 accent-teal-500"
-                      checked={challengeState.selfCheck[item.id]}
-                      onChange={() =>
-                        setChallengeState({
-                          ...challengeState,
-                          selfCheck: { ...challengeState.selfCheck, [item.id]: !challengeState.selfCheck[item.id] }
-                        })
-                      }
-                    />
-                    <span>{item.label}</span>
-                  </label>
-                ))}
-              </div>
-              <div className="mt-4 flex gap-4">
+              <h3 className="font-bold mb-4 text-xl">Submit</h3>
+              <pre className="code-block text-xs p-3 rounded-lg h-48 overflow-y-auto mb-4">{challengeState.userSolution}</pre>
+              <div className="flex gap-4">
                 <button
                   onClick={submitChallenge}
                   disabled={!readyToSubmit}
@@ -1623,7 +2199,7 @@ When to Use:
                   Submit Solution
                 </button>
                 <button
-                  onClick={() => setChallengeState({ ...challengeState, showSolution: !challengeState.showSolution })}
+                  onClick={() => setChallengeState(prev => ({ ...prev, showSolution: !prev.showSolution }))}
                   className={`flex-1 bg-gradient-to-r ${primaryGradientReverse} px-6 py-3 rounded-lg font-bold ${primaryHoverGradientReverse} transition`}
                 >
                   {challengeState.showSolution ? 'Hide' : 'Show'} Reference
