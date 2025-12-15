@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Trophy, Award, Star, CheckCircle, Circle, Lock, BookOpen, Brain, Code, Target, ArrowRight, ArrowLeft, Home, Zap, MessageCircle, Sun, Moon } from 'lucide-react';
 import classDiagramImg from './assets/class-diagram.png';
+import classExampleImg from './assets/class-example.svg';
 import umlClassImg from './assets/uml-diagram.svg';
 import orderExampleImg from './assets/order1.svg';
+import componentNotationImg from './assets/component-notation.svg';
 import componentImg from './assets/component.svg';
 import usecaseImg from './assets/usecase.svg';
 import sequenceImg from './assets/sequence.svg';
@@ -15,8 +17,10 @@ import './App.css';
 
 const lessonImages = {
   'class-diagram': classDiagramImg,
+  'class-example': classExampleImg,
   'uml-class': umlClassImg,
   'order1': orderExampleImg,
+  'component-notation': componentNotationImg,
   component: componentImg,
   usecase: usecaseImg,
   sequence: sequenceImg,
@@ -185,20 +189,16 @@ Visibility Modifiers:
 ~ package   - accessible within package
 
 Relationships:
-→ Association     - general relationship
-◆→ Composition    - strong "has-a" (filled diamond)
-◇→ Aggregation   - weak "has-a" (hollow diamond)
-───▷ Generalization - inheritance (hollow arrow)
----▷ Realization   - implements interface (dashed)
+-> Association     - general relationship
+◆-> Composition    - strong "has-a" (filled diamond)
+◇-> Aggregation    - weak "has-a" (hollow diamond)
+--> Generalization - inheritance (hollow arrow)
+---> Realization   - implements interface (dashed)
 
-Example:
-Vehicle
-  - speed, color
-  + drive()
-  inherits into
-Car
-  - doors
-  + openDoor()`,
+Example - Inheritance:
+[IMAGE:class-example]
+
+`,
           quiz: {
             questions: [
               {
@@ -326,7 +326,7 @@ Use Cases:
           content: `Component Diagrams show the organization and dependencies among software components. They model the physical aspects of object-oriented systems.
 
 Component Notation:
-[IMAGE:component]
+[IMAGE:component-notation]
 
 Interfaces:
 ○─ Provided Interface (lollipop) - services offered
@@ -1296,7 +1296,7 @@ When to Use:
                 if (block.type === 'image') {
                   const imgSrc = lessonImages[block.id];
                   if (!imgSrc) return null;
-                  const sizeClass = 'max-w-[200px]';
+                  const sizeClass = block.id === 'communication' ? 'max-w-[200px]' : 'max-w-[240px]';
                   return (
                     <div key={`img-${idx}`} className="flex justify-center">
                       <img

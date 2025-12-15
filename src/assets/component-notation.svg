@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" width="360" height="200" role="img" aria-labelledby="title desc">
+  <title id="title">UML Component Notation</title>
+  <desc id="desc">A UML component box labeled ComponentName with the folded-corner icon in the upper right.</desc>
+  <rect x="0" y="0" width="360" height="200" fill="#f3f4f6" />
+  <g filter="url(#shadow)">
+    <rect x="30" y="35" width="300" height="130" rx="6" ry="6" fill="#ffffff" stroke="#b8b8b8" stroke-width="2" />
+    <rect x="280" y="46" width="40" height="24" rx="3" ry="3" fill="#ffffff" stroke="#b8b8b8" stroke-width="2" />
+    <rect x="284" y="52" width="10" height="3" fill="#b8b8b8" />
+    <rect x="284" y="59" width="10" height="3" fill="#b8b8b8" />
+    <rect x="298" y="52" width="15" height="12" fill="#e5e7eb" stroke="#b8b8b8" stroke-width="1.5" />
+    <text x="180" y="120" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#4b5563">ComponentName</text>
+  </g>
+  <defs>
+    <filter id="shadow" x="0" y="0" width="150%" height="150%">
+      <feOffset result="offOut" in="SourceAlpha" dx="0" dy="4" />
+      <feGaussianBlur result="blurOut" in="offOut" stdDeviation="6" />
+      <feColorMatrix result="blurOut" in="blurOut" type="matrix" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 0.2 0" />
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+    </filter>
+  </defs>
+</svg>
