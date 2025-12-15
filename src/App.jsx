@@ -941,15 +941,31 @@ When to Use:
       userSolution: '',
       hintsUsed: 0,
       showSolution: false,
-      submitted: false
+      submitted: false,
+      selfCheck: {
+        classes: false,
+        attributes: false,
+        relationships: false
+      },
+      feedback: ''
     });
     setCurrentView('challenge');
   };
 
   const submitChallenge = () => {
+    const readyToSubmit = challengeState.userSolution.trim() && Object.values(challengeState.selfCheck).every(Boolean);
+    if (!readyToSubmit) {
+      setChallengeState({
+        ...challengeState,
+        feedback: 'Please add your diagram/notes and check each item to confirm you covered the basics.'
+      });
+      return;
+    }
+
     setChallengeState({
       ...challengeState,
-      submitted: true
+      submitted: true,
+      feedback: ''
     });
 
     if (!userProgress.challenges[challengeState.lesson.id]) {
@@ -972,6 +988,19 @@ When to Use:
   };
 
   const themeClass = darkMode ? 'theme-dark' : 'theme-light';
+  const primaryGradient = darkMode ? 'from-cyan-600 to-blue-600' : 'from-sky-400 to-teal-400';
+  const primaryGradientReverse = darkMode ? 'from-blue-600 to-cyan-600' : 'from-teal-400 to-sky-300';
+  const primaryHoverGradient = darkMode ? 'hover:from-cyan-500 hover:to-blue-500' : 'hover:from-sky-300 hover:to-teal-300';
+  const primaryHoverGradientReverse = darkMode ? 'hover:from-blue-500 hover:to-cyan-500' : 'hover:from-teal-300 hover:to-sky-200';
+  const primaryBorder = darkMode ? 'border-blue-500/50' : 'border-sky-400/70';
+  const primaryText = darkMode ? 'text-blue-400' : 'text-sky-500';
+  const primaryBadgeBg = darkMode ? 'bg-blue-600' : 'bg-sky-500';
+  const accentGradient = darkMode ? 'from-purple-600 to-pink-600' : 'from-fuchsia-400 to-pink-400';
+  const accentHoverGradient = darkMode ? 'hover:from-purple-500 hover:to-pink-500' : 'hover:from-fuchsia-300 hover:to-pink-300';
+  const accentBorder = darkMode ? 'border-purple-500/50' : 'border-fuchsia-400/70';
+  const accentText = darkMode ? 'text-purple-400' : 'text-fuchsia-500';
+  const accentBadgeBg = darkMode ? 'bg-purple-600' : 'bg-fuchsia-400';
+  const sectionGradient = (gradient) => (!darkMode && gradient === 'from-blue-500 to-cyan-500' ? 'from-sky-400 to-cyan-300' : gradient);
 
   const renderHome = () => (
     <div className={`app-shell ${themeClass}`}>
@@ -983,7 +1012,7 @@ When to Use:
             className={`card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg`}
             title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-purple-600" />}
+            {darkMode ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className={`w-6 h-6 ${accentText}`} />}
           </button>
         </div>
         {/* Header */}
@@ -995,7 +1024,7 @@ When to Use:
           
           {/* Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl p-6 shadow-lg transform hover:scale-105 transition">
+            <div className={`bg-gradient-to-br ${primaryGradientReverse} rounded-xl p-6 shadow-lg transform hover:scale-105 transition`}>
               <div className="flex items-center justify-between mb-2">
                 <Zap className="w-8 h-8" />
                 <span className="text-3xl font-bold">{userProgress.points}</span>
@@ -1003,7 +1032,7 @@ When to Use:
               <p className="text-sm opacity-90">Total Points</p>
             </div>
             
-            <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-6 shadow-lg transform hover:scale-105 transition">
+            <div className={`bg-gradient-to-br ${accentGradient} rounded-xl p-6 shadow-lg transform hover:scale-105 transition`}>
               <div className="flex items-center justify-between mb-2">
                 <Trophy className="w-8 h-8" />
                 <span className="text-3xl font-bold">{userProgress.badges.length}</span>
@@ -1039,14 +1068,14 @@ When to Use:
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="card rounded-xl p-6 border-2 border-blue-500/50 shadow-lg">
-            <Brain className="w-12 h-12 text-blue-400 mb-4" />
+          <div className={`card rounded-xl p-6 border-2 ${primaryBorder} shadow-lg`}>
+            <Brain className={`w-12 h-12 ${primaryText} mb-4`} />
             <h3 className="text-xl font-bold mb-2">Interactive Learning</h3>
             <p className="text-tertiary">Engaging content with real-world examples and visual diagrams</p>
           </div>
           
-          <div className="card rounded-xl p-6 border-2 border-purple-500/50 shadow-lg">
-            <MessageCircle className="w-12 h-12 text-purple-400 mb-4" />
+          <div className={`card rounded-xl p-6 border-2 ${accentBorder} shadow-lg`}>
+            <MessageCircle className={`w-12 h-12 ${accentText} mb-4`} />
             <h3 className="text-xl font-bold mb-2">Instant Feedback</h3>
             <p className="text-tertiary">Quizzes with detailed explanations and immediate results</p>
           </div>
@@ -1069,7 +1098,7 @@ When to Use:
                 setCurrentView('section');
               }}
             >
-              <div className={`bg-gradient-to-r ${section.color} p-6`}>
+              <div className={`bg-gradient-to-r ${sectionGradient(section.color)} p-6`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-5xl mb-2">{section.icon}</div>
@@ -1081,7 +1110,7 @@ When to Use:
               
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <BookOpen className="w-5 h-5 text-blue-400" />
+                  <BookOpen className={`w-5 h-5 ${primaryText}`} />
                   <span className="text-secondary">{section.lessons.length} Lessons</span>
                 </div>
                 
@@ -1095,8 +1124,8 @@ When to Use:
                       )}
                       <span className="text-tertiary">{lesson.title}</span>
                       <div className="flex gap-1 ml-auto">
-                        {lesson.hasQuiz && <span className="text-xs bg-blue-600 px-2 py-1 rounded">Quiz</span>}
-                        {lesson.hasChallenge && <span className="text-xs bg-purple-600 px-2 py-1 rounded">Challenge</span>}
+                        {lesson.hasQuiz && <span className={`text-xs ${primaryBadgeBg} px-2 py-1 rounded`}>Quiz</span>}
+                        {lesson.hasChallenge && <span className={`text-xs ${accentBadgeBg} px-2 py-1 rounded`}>Challenge</span>}
                         {lesson.hasInteractive && <span className="text-xs bg-green-600 px-2 py-1 rounded">Interactive</span>}
                       </div>
                     </div>
@@ -1168,11 +1197,11 @@ When to Use:
               onClick={() => setDarkMode(!darkMode)}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
+              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className={`w-5 h-5 ${accentText}`} />}
             </button>
           </div>
 
-          <div className={`bg-gradient-to-r ${section.color} rounded-2xl p-8 mb-8`}>
+          <div className={`bg-gradient-to-r ${sectionGradient(section.color)} rounded-2xl p-8 mb-8`}>
             <div className="text-6xl mb-4">{section.icon}</div>
             <h1 className="text-4xl font-bold">{section.title}</h1>
           </div>
@@ -1201,15 +1230,15 @@ When to Use:
                       
                       <div className="flex gap-2 mb-3">
                         {lesson.hasQuiz && (
-                          <span className="text-xs bg-blue-600 px-3 py-1 rounded-full flex items-center gap-1">
+                          <span className={`text-xs ${primaryBadgeBg} px-3 py-1 rounded-full flex items-center gap-1`}>
                             <Brain className="w-3 h-3" />
                             Quiz Available
                             {quizScore !== undefined && ` (${quizScore}%)`}
                           </span>
                         )}
                         {lesson.hasChallenge && (
-                          <span className="text-xs bg-purple-600 px-3 py-1 rounded-full flex items-center gap-1">
-                            <Code className="w-3 h-3" />
+                          <span className={`text-xs ${accentBadgeBg} px-3 py-1 rounded-full flex items-center gap-1`}>
+                            <Code className={`w-3 h-3 ${accentText}`} />
                             Challenge
                             {challengeComplete && ' ✓'}
                           </span>
@@ -1228,7 +1257,7 @@ When to Use:
                         setCurrentLesson(lesson);
                         setCurrentView('lesson');
                       }}
-                      className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-3 rounded-lg font-bold hover:from-cyan-500 hover:to-blue-500 transition flex items-center gap-2"
+                      className={`bg-gradient-to-r ${primaryGradient} px-6 py-3 rounded-lg font-bold ${primaryHoverGradient} transition flex items-center gap-2`}
                     >
                       {completed ? 'Review' : 'Start'}
                       <ArrowRight className="w-5 h-5" />
@@ -1284,7 +1313,7 @@ When to Use:
               onClick={() => setDarkMode(!darkMode)}
               className="card p-2 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
+              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className={`w-5 h-5 ${accentText}`} />}
             </button>
           </div>
 
@@ -1339,7 +1368,7 @@ When to Use:
             {currentLesson.hasQuiz && (
               <button
                 onClick={() => startQuiz(currentLesson)}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4 rounded-xl font-bold text-lg hover:from-blue-500 hover:to-cyan-500 transition shadow-lg flex items-center justify-center gap-2"
+                className={`flex-1 bg-gradient-to-r ${primaryGradientReverse} px-6 py-4 rounded-xl font-bold text-lg ${primaryHoverGradientReverse} transition shadow-lg flex items-center justify-center gap-2`}
               >
                 <Brain className="w-6 h-6" />
                 Take Quiz
@@ -1349,7 +1378,7 @@ When to Use:
             {currentLesson.hasChallenge && (
               <button
                 onClick={() => startChallenge(currentLesson)}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-pink-500 transition shadow-lg flex items-center justify-center gap-2"
+                className={`flex-1 bg-gradient-to-r ${accentGradient} px-6 py-4 rounded-xl font-bold text-lg ${accentHoverGradient} transition shadow-lg flex items-center justify-center gap-2`}
               >
                 <Code className="w-6 h-6" />
                 Try Challenge
@@ -1373,7 +1402,7 @@ When to Use:
                 onClick={() => setDarkMode(!darkMode)}
                 className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
               >
-                {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
+                {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className={`w-5 h-5 ${accentText}`} />}
               </button>
             </div>
             <div className="card rounded-2xl p-8 shadow-2xl">
@@ -1425,13 +1454,13 @@ When to Use:
                     setQuizState(null);
                     setCurrentView('lesson');
                   }}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-3 rounded-lg font-bold hover:from-blue-500 hover:to-cyan-500 transition"
+                  className={`flex-1 bg-gradient-to-r ${primaryGradientReverse} px-6 py-3 rounded-lg font-bold ${primaryHoverGradientReverse} transition`}
                 >
                   Back to Lesson
                 </button>
                 <button
                   onClick={() => startQuiz(quizState.lesson)}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 rounded-lg font-bold hover:from-purple-500 hover:to-pink-500 transition"
+                  className={`flex-1 bg-gradient-to-r ${accentGradient} px-6 py-3 rounded-lg font-bold ${accentHoverGradient} transition`}
                 >
                   Retake Quiz
                 </button>
@@ -1453,7 +1482,7 @@ When to Use:
               onClick={() => setDarkMode(!darkMode)}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
+              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className={`w-5 h-5 ${accentText}`} />}
             </button>
           </div>
           <div className="mb-6">
@@ -1480,7 +1509,7 @@ When to Use:
                   className="w-full text-left code-block card-hover p-4 rounded-lg transition border-2 border-theme hover:border-cyan-500"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${primaryGradient} flex items-center justify-center font-bold flex-shrink-0`}>
                       {String.fromCharCode(65 + idx)}
                     </div>
                     <span>{option}</span>
@@ -1495,6 +1524,14 @@ When to Use:
   };
 
   const renderChallenge = () => {
+    const selfCheckItems = [
+      { id: 'classes', label: 'I listed all required classes (e.g., Book, Member, Librarian).' },
+      { id: 'attributes', label: 'I captured key attributes and methods for each class.' },
+      { id: 'relationships', label: 'I drew the relationships between classes (inheritance/association/etc.).' }
+    ];
+    const allChecklistChecked = Object.values(challengeState.selfCheck).every(Boolean);
+    const readyToSubmit = challengeState.userSolution.trim() && allChecklistChecked;
+
     return (
       <div className={`app-shell ${themeClass}`}>
         <div className="max-w-6xl mx-auto">
@@ -1513,13 +1550,13 @@ When to Use:
               onClick={() => setDarkMode(!darkMode)}
               className="card p-3 rounded-full border-theme border-2 hover:scale-110 transition shadow-lg"
             >
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-purple-600" />}
+              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className={`w-5 h-5 ${accentText}`} />}
             </button>
           </div>
 
           <div className="card rounded-2xl p-8 mb-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <Code className="w-8 h-8 text-purple-400" />
+              <Code className={`w-8 h-8 ${accentText}`} />
               <h1 className="text-3xl font-bold">{challengeState.lesson.challenge.title}</h1>
             </div>
             <p className="text-secondary text-lg mb-4">{challengeState.lesson.challenge.description}</p>
@@ -1555,24 +1592,48 @@ When to Use:
               <textarea
                 value={challengeState.userSolution}
                 onChange={(e) => setChallengeState({ ...challengeState, userSolution: e.target.value })}
-                placeholder="Draw your UML diagram here using ASCII art...&#10;&#10;Example:&#10;┌─────────┐&#10;│  Class  │&#10;├─────────┤&#10;│ - attr  │&#10;└─────────┘"
+                placeholder="Describe your diagram (classes, attributes, relationships) or sketch in ASCII. Bullet points are fine!&#10;&#10;Example:&#10;- Classes: Book, Member, Librarian, Library&#10;- Book: title, author, ISBN, availability&#10;- Member borrows Book; Library aggregates Book and Member"
                 className="w-full h-96 input-field code-text font-mono text-sm p-4 rounded-lg border focus:border-cyan-500 focus:outline-none resize-none"
               />
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-secondary font-semibold">Quick self-check before submitting:</p>
+                {selfCheckItems.map(item => (
+                  <label key={item.id} className="flex items-start gap-2 text-sm text-secondary cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-1 accent-teal-500"
+                      checked={challengeState.selfCheck[item.id]}
+                      onChange={() =>
+                        setChallengeState({
+                          ...challengeState,
+                          selfCheck: { ...challengeState.selfCheck, [item.id]: !challengeState.selfCheck[item.id] }
+                        })
+                      }
+                    />
+                    <span>{item.label}</span>
+                  </label>
+                ))}
+              </div>
               <div className="mt-4 flex gap-4">
                 <button
                   onClick={submitChallenge}
-                  disabled={!challengeState.userSolution.trim()}
+                  disabled={!readyToSubmit}
                   className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 px-6 py-3 rounded-lg font-bold hover:from-green-500 hover:to-teal-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Submit Solution
                 </button>
                 <button
                   onClick={() => setChallengeState({ ...challengeState, showSolution: !challengeState.showSolution })}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-3 rounded-lg font-bold hover:from-blue-500 hover:to-cyan-500 transition"
+                  className={`flex-1 bg-gradient-to-r ${primaryGradientReverse} px-6 py-3 rounded-lg font-bold ${primaryHoverGradientReverse} transition`}
                 >
                   {challengeState.showSolution ? 'Hide' : 'Show'} Reference
                 </button>
               </div>
+              {challengeState.feedback && (
+                <div className="mt-3 text-sm text-yellow-500">
+                  {challengeState.feedback}
+                </div>
+              )}
             </div>
 
             {challengeState.showSolution && (
