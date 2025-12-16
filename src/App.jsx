@@ -960,6 +960,52 @@ When to Use:
     return { classes, relationships: [] };
   };
 
+  const sanitizeDiagram = (diagram, lesson) => {
+    const required = parseRequiredClasses(lesson.challenge.scenario);
+    const fallback = ['Class1', 'Class2', 'Class3'];
+    const baseDiagram = diagram?.classes && diagram?.relationships ? diagram : createTemplateDiagram(lesson);
+
+    const cleanedClasses = [];
+    const seen = new Set();
+    baseDiagram.classes.forEach(cls => {
+      const name = (cls.name || '').trim();
+      if (name.length < 2) return; // drop junk like "a"
+      const key = name.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      cleanedClasses.push({ ...cls, name });
+    });
+
+    // Ensure required classes exist
+    required.forEach((reqName, idx) => {
+      const key = reqName.toLowerCase();
+      if (!seen.has(key)) {
+        const newId = `c${Date.now()}-${idx}-req`;
+        cleanedClasses.push({ id: newId, name: reqName, attributes: [], methods: [] });
+        seen.add(key);
+      }
+    });
+
+    // Ensure minimum of three classes
+    const ensureList = cleanedClasses.length ? cleanedClasses : [];
+    const fallbackNames = required.length ? required : fallback;
+    let i = 0;
+    while (ensureList.length < 3) {
+      const name = fallbackNames[i % fallbackNames.length];
+      const key = name.toLowerCase();
+      if (!seen.has(key)) {
+        ensureList.push({ id: `c${Date.now()}-${i}-fb`, name, attributes: [], methods: [] });
+        seen.add(key);
+      }
+      i += 1;
+    }
+
+    const classIds = new Set(ensureList.map(c => c.id));
+    const relationships = (baseDiagram.relationships || []).filter(r => classIds.has(r.fromId) && classIds.has(r.toId) && r.fromId !== r.toId);
+
+    return { classes: ensureList, relationships };
+  };
+
   const storageKeyForLesson = (lessonId) => `uml-challenge-${lessonId}`;
 
   const startChallenge = (lesson) => {
@@ -976,6 +1022,8 @@ When to Use:
     } catch (e) {
       // ignore parse errors and fall back to template
     }
+
+    diagram = sanitizeDiagram(diagram, lesson);
 
     const firstId = diagram.classes[0]?.id || '';
     const secondId = diagram.classes[1]?.id || firstId;
@@ -1729,6 +1777,59 @@ When to Use:
       }));
     };
 
+    const deleteClass = (classId) => {
+      const remainingClasses = challengeState.diagram.classes.filter(c => c.id !== classId);
+      if (!remainingClasses.length && !confirm('This will remove your last class. Continue?')) return;
+
+      const remainingRelationships = challengeState.diagram.relationships
+        .filter(r => r.fromId !== classId && r.toId !== classId);
+
+      const nextSelectedId = classId === challengeState.selectedClassId
+        ? (remainingClasses[0]?.id || null)
+        : challengeState.selectedClassId;
+
+      const nextNodeEditor = nextSelectedId
+        ? (() => {
+            const cls = remainingClasses.find(c => c.id === nextSelectedId);
+            return {
+              title: cls?.name || '',
+              attributesText: cls?.attributes?.join('\n') || '',
+              methodsText: cls?.methods?.join('\n') || ''
+            };
+          })()
+        : { title: '', attributesText: '', methodsText: '' };
+
+      const nextDiagram = { classes: remainingClasses, relationships: remainingRelationships };
+
+      setChallengeState(prev => {
+        const nextState = {
+          ...prev,
+          diagram: nextDiagram,
+          userSolution: generateSolutionFromDiagram(nextDiagram),
+          selectedClassId: nextSelectedId,
+          nodeEditor: nextNodeEditor
+        };
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(nextDiagram));
+        } catch (e) {
+          // ignore storage errors
+        }
+        return nextState;
+      });
+
+      setClassFormInputs(prev => {
+        const copy = { ...prev };
+        delete copy[classId];
+        return copy;
+      });
+
+      setRelationshipForm(prev => {
+        const validFrom = remainingClasses.find(c => c.id === prev.fromId)?.id || remainingClasses[0]?.id || '';
+        const validTo = remainingClasses.find(c => c.id === prev.toId)?.id || remainingClasses[1]?.id || validFrom;
+        return { ...prev, fromId: validFrom, toId: validTo };
+      });
+    };
+
     const saveNodeEdits = () => {
       if (!selectedClass) return;
       const { title, attributesText, methodsText } = challengeState.nodeEditor;
@@ -2061,15 +2162,23 @@ When to Use:
                         }))}
                       />
                     </div>
-                    <button
-                      onClick={() => {
-                        saveNodeEdits();
-                        setClassFormInputs(prev => ({ ...prev, [selectedClass.id]: { attr: '', method: '' } }));
-                      }}
-                      className="bg-gradient-to-r from-green-600 to-teal-600 px-4 py-2 rounded-lg font-bold hover:from-green-500 hover:to-teal-500 transition"
-                    >
-                      Save
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          saveNodeEdits();
+                          setClassFormInputs(prev => ({ ...prev, [selectedClass.id]: { attr: '', method: '' } }));
+                        }}
+                        className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 px-4 py-2 rounded-lg font-bold hover:from-green-500 hover:to-teal-500 transition"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => deleteClass(selectedClass.id)}
+                        className="flex-1 bg-gradient-to-r from-red-700 to-red-500 px-4 py-2 rounded-lg font-bold hover:from-red-600 hover:to-red-400 transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-tertiary">Select a class card to edit.</p>
